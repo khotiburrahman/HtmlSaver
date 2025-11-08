@@ -1,4 +1,4 @@
-name: Build Android APK (v4 Stable Final)
+name: Build Android APK (Root Project)
 
 on:
   push:
@@ -8,21 +8,17 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      # 1️⃣ Checkout repo
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup Java 17
-      - name: Set up JDK 17
+      - name: Setup JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      # 3️⃣ Setup Android SDK (manual install)
-      - name: Install Android SDK tools
+      - name: Install Android SDK
         run: |
           sudo mkdir -p /usr/local/lib/android/sdk/cmdline-tools
           cd /usr/local/lib/android/sdk/cmdline-tools
@@ -34,38 +30,23 @@ jobs:
           yes | sudo $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
           yes | sudo $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
-      # 4️⃣ Build APK (pakai path absolut)
-      - name: Build Debug APK
+      - name: Build Debug APK (root project)
         run: |
           export ANDROID_HOME=/usr/local/lib/android/sdk
           export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
           chmod +x gradlew || true
           ./gradlew clean
-          ./gradlew app:assembleDebug --stacktrace
+          ./gradlew assembleDebug --stacktrace
           find $PWD -type f -name "*.apk"
 
-      # 5️⃣ Rename APK agar jelas
-      - name: Rename APK file
+      - name: Rename and Upload
         run: |
-          APK_PATH=$(find app/build/outputs -type f -name "*.apk" | head -n 1)
-          echo "Found APK at: $APK_PATH"
+          APK_PATH=$(find . -type f -name "*.apk" | head -n 1)
+          echo "Found APK: $APK_PATH"
           cp "$APK_PATH" html_saver_build_${{ github.run_number }}.apk
 
-      # 6️⃣ Upload ke Artifacts
-      - name: Upload APK Artifact
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: html_saver_build_${{ github.run_number }}
           path: html_saver_build_${{ github.run_number }}.apk
-
-      # 7️⃣ Upload ke Releases (auto tag)
-      - name: Upload APK to GitHub Releases
-        uses: softprops/action-gh-release@v1
-        if: success()
-        with:
-          tag_name: build-${{ github.run_number }}
-          name: "HTML Saver Build #${{ github.run_number }}"
-          body: "Automatic build from commit ${{ github.sha }}"
-          files: "html_saver_build_${{ github.run_number }}.apk"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
