@@ -49,11 +49,14 @@ jobs:
           name: app-debug
           path: app/build/outputs/apk/debug/app-debug.apk
 
-      # 6️⃣ Upload ke Releases
-      - name: Upload APK to GitHub Releases
+      # 6️⃣ Upload ke Releases (otomatis buat tag)
+      - name: Create Release and Upload APK
         uses: softprops/action-gh-release@v1
         if: success()
         with:
+          tag_name: build-${{ github.run_number }}
+          name: "HTML Saver Build #${{ github.run_number }}"
+          body: "Automatic build from commit ${{ github.sha }}"
           files: app/build/outputs/apk/debug/app-debug.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
