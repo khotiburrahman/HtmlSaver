@@ -1,1 +1,37 @@
- 
+apply plugin: 'com.android.application'
+
+android {
+    namespace "com.khotiburrahman.htmlsaver"
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.khotiburrahman.htmlsaver"
+        minSdk 24
+        targetSdk 35
+        versionCode 1
+        versionName "1.0"
+
+        // Karena offline asset
+        vectorDrawables.useSupportLibrary = true
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+        debug {
+            // Debug APK yang akan dihasilkan GitHub Actions
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.activity:activity:1.9.2'
+    // WebView bawaan Android SDK; tidak perlu dependensi khusus
+} 
