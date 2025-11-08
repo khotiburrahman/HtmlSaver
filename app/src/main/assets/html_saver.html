@@ -1,1 +1,328 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTML Token Saver v6.4 — Final Stable</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --panel-light: #1c222b;
+    --text: #e6edf3;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --border: #30363d;
+    --muted: #8b949e;
+    --success: #22c55e;
+    --danger: #ef4444;
+  }
+  [data-theme="light"] {
+    --bg: #f6f8fa;
+    --panel: #ffffff;
+    --panel-light: #f1f5f9;
+    --text: #1e293b;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --border: #cbd5e1;
+    --muted: #64748b;
+  }
+  * { box-sizing: border-box; transition: all 0.25s ease; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    margin: 0; padding: 30px 15px;
+    display: flex; justify-content: center;
+  }
+  .container { width: 100%; max-width: 900px; }
 
+  header { text-align: center; margin-bottom: 25px; position: relative; padding-right: 50px; }
+  h1 {
+    font-size: 1.8rem; margin: 0;
+    background: linear-gradient(90deg, var(--accent), #93c5fd);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    font-weight: 600;
+  }
+  .subtitle { color: var(--muted); margin: 6px 0 0; font-size: 0.95rem; }
+
+  .theme-toggle {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    font-size: 1.3rem;
+    cursor: pointer;
+    background: var(--panel-light);
+    color: var(--accent);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    border: 1px solid var(--border);
+  }
+  .theme-toggle:hover {
+    background: var(--accent);
+    color: #fff;
+    transform: translateY(-50%) scale(1.05);
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+
+  input[type=file] {
+    width: 100%;
+    background: var(--panel-light);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+
+  label {
+    display: flex;
+    align-items: center;
+    font-size: 0.93rem;
+    color: var(--muted);
+    margin: 4px 0;
+  }
+  input[type=checkbox] {
+    margin-right: 8px;
+    transform: scale(1.1);
+    accent-color: var(--accent);
+  }
+
+  .btn-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
+  }
+
+  button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 0.93rem;
+    box-shadow: 0 2px 10px rgba(59,130,246,0.3);
+  }
+  button:hover { background: var(--accent-hover); transform: translateY(-1px); }
+  button.danger { background: var(--danger); }
+
+  #statsInfo, #dashboard, #log {
+    background: var(--panel-light);
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 0.9rem;
+    margin-top: 12px;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  #previewWrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+  }
+
+  #previewBoxBefore, #previewBoxAfter {
+    flex: 1;
+    min-width: 260px;
+    background: var(--panel-light);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    height: 230px;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 0.88rem;
+    white-space: pre-wrap;
+  }
+
+  canvas {
+    background: var(--panel-light);
+    border-radius: 8px;
+    margin-top: 15px;
+    padding: 10px;
+    width: 100%;
+  }
+
+  .highlight { color: var(--success); font-weight: 600; }
+
+  .small-note {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-top: 5px;
+    text-align: right;
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 20px; }
+    .card { padding: 18px; }
+    h1 { font-size: 1.5rem; }
+    .small-note { text-align: center; }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>HTML Token Saver v6.4</h1>
+      <div class="theme-toggle" id="themeToggle">🌙</div>
+      <p class="subtitle">Dashboard interaktif untuk mengoptimalkan file HTML agar hemat token ⚡</p>
+    </header>
+
+    <div class="card">
+      <input type="file" id="inputFile" accept=".html" multiple>
+      <label><input type="checkbox" id="removeComments" checked> Hapus komentar HTML</label>
+      <label><input type="checkbox" id="removeTabs" checked> Hapus tab</label>
+      <label><input type="checkbox" id="removeNewlines" checked> Hapus baris kosong</label>
+      <label><input type="checkbox" id="removeExtraSpaces" checked> Hapus spasi berlebih</label>
+
+      <div class="btn-grid">
+        <button id="previewBtn">👁️ Pratinjau</button>
+        <button id="processBtn">💾 Simpan Semua</button>
+        <button id="copyBtn">📋 Salin Hasil</button>
+        <button id="resetBtn" class="danger">🧹 Bersihkan Semua</button>
+      </div>
+
+      <div id="statsInfo"></div>
+      <p class="small-note" id="errorNote"></p>
+
+      <div id="previewWrapper">
+        <div id="previewBoxBefore"></div>
+        <div id="previewBoxAfter"></div>
+      </div>
+
+      <canvas id="chartCanvas" height="160"></canvas>
+      <div id="dashboard"></div>
+      <div id="log"></div>
+    </div>
+  </div>
+
+<script>
+const themeToggle = document.getElementById('themeToggle');
+const root = document.documentElement;
+if(localStorage.getItem('theme') === 'light') { root.dataset.theme = 'light'; themeToggle.textContent = '🌞'; }
+
+themeToggle.onclick = () => {
+  if(root.dataset.theme === 'light') {
+    root.removeAttribute('data-theme'); localStorage.removeItem('theme'); themeToggle.textContent = '🌙';
+  } else {
+    root.dataset.theme = 'light'; localStorage.setItem('theme', 'light'); themeToggle.textContent = '🌞';
+  }
+};
+
+function processHTML(html, opts) {
+  let result = html;
+  if (opts.removeComments) result = result.replace(/<!--[\s\S]*?-->/g, "");
+  if (opts.removeTabs) result = result.replace(/\t+/g, "");
+  if (opts.removeNewlines) result = result.replace(/\n\s*/g, "");
+  if (opts.removeExtraSpaces) result = result.replace(/\s{2,}/g, " ");
+  return result.trim();
+}
+
+function estimateTokens(text){ return Math.ceil(text.length / 4); }
+async function readFile(file){ return await file.text(); }
+
+document.getElementById("previewBtn").addEventListener("click", async () => {
+  const files = inputFile.files;
+  if (!files.length) return alert("Pilih satu file untuk pratinjau.");
+  const file = files[0];
+  const text = await readFile(file);
+  const opts = { removeComments: removeComments.checked, removeTabs: removeTabs.checked, removeNewlines: removeNewlines.checked, removeExtraSpaces: removeExtraSpaces.checked };
+  const processed = processHTML(text, opts);
+  const before = estimateTokens(text);
+  const after = estimateTokens(processed);
+  const saving = ((before - after) / before * 100).toFixed(1);
+  const beforeErr = Math.round(before * 0.1);
+  const afterErr = Math.round(after * 0.1);
+
+  previewBoxBefore.textContent = text.slice(0, 4000);
+  previewBoxAfter.textContent = processed.slice(0, 4000);
+  statsInfo.innerHTML = `📄 <b>${file.name}</b><br>Ukuran ${(file.size/1024).toFixed(2)} KB<br>Total token: ${before} ± ${beforeErr} → <span class="highlight">${after} ± ${afterErr}</span> (hemat ${saving}%)`;
+  document.getElementById("errorNote").textContent = "Estimasi ketelitian ±10% dari nilai aktual";
+});
+
+document.getElementById("processBtn").addEventListener("click", async () => {
+  const files = inputFile.files;
+  if (!files.length) return alert("Pilih file HTML dulu!");
+  const log = document.getElementById("log");
+  const dashboard = document.getElementById("dashboard");
+  const opts = { removeComments: removeComments.checked, removeTabs: removeTabs.checked, removeNewlines: removeNewlines.checked, removeExtraSpaces: removeExtraSpaces.checked };
+  const chartData = [];
+  let totalBefore=0, totalAfter=0;
+
+  log.textContent = "Memproses " + files.length + " file...\n";
+  for (let file of files) {
+    const text = await readFile(file);
+    const processed = processHTML(text, opts);
+    const newName = file.name.replace(/\.html$/i, "_unformatted.html");
+    const blob = new Blob([processed], { type: "text/html" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = newName; a.click(); URL.revokeObjectURL(a.href);
+    const before = estimateTokens(text);
+    const after = estimateTokens(processed);
+    const saving = ((before - after) / before * 100).toFixed(1);
+    chartData.push({ file: file.name, saving });
+    totalBefore += before; totalAfter += after;
+    log.textContent += `✅ ${file.name} → ${newName} (hemat ${saving}%)\n`;
+  }
+  const totalSaving = ((totalBefore-totalAfter)/totalBefore*100).toFixed(1);
+  dashboard.innerHTML = `📊 <b>Rangkuman:</b><br>Total file: ${files.length}<br>Total token: ${totalBefore} → <span class="highlight">${totalAfter}</span> (hemat ${totalSaving}%)`;
+  drawChart(chartData);
+});
+
+document.getElementById("copyBtn").addEventListener("click", () => {
+  const text = previewBoxAfter.textContent;
+  if (!text) return alert("Tidak ada hasil untuk disalin!");
+  navigator.clipboard.writeText(text);
+  alert("Hasil telah disalin ke clipboard 📋");
+});
+
+document.getElementById("resetBtn").addEventListener("click", () => {
+  ["previewBoxBefore","previewBoxAfter","statsInfo","log","dashboard","errorNote"].forEach(id=>document.getElementById(id).textContent="");
+  const ctx = document.getElementById("chartCanvas").getContext("2d");
+  ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+  alert("Semua data telah dibersihkan 🧹");
+});
+
+function drawChart(data) {
+  const ctx = document.getElementById("chartCanvas");
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: data.map(d => d.file),
+      datasets: [{
+        label: "% Penghematan Token",
+        data: data.map(d => d.saving),
+        backgroundColor: "rgba(59,130,246,0.6)",
+        borderRadius: 8
+      }]
+    },
+    options: {
+      scales: { y: { beginAtZero: true, title: { display: true, text: "Persentase (%)" } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+</script>
+</body>
+</html>
