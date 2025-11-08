@@ -1,52 +1,10 @@
-name: Build Android APK (Root Project)
-
-on:
-  push:
-    branches: [ "main" ]
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-
-      - name: Install Android SDK
-        run: |
-          sudo mkdir -p /usr/local/lib/android/sdk/cmdline-tools
-          cd /usr/local/lib/android/sdk/cmdline-tools
-          sudo wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O tools.zip
-          sudo unzip -q tools.zip -d latest
-          rm tools.zip
-          export ANDROID_HOME=/usr/local/lib/android/sdk
-          export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
-          yes | sudo $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-          yes | sudo $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
-
-      - name: Build Debug APK (root project)
+- name: Build Debug APK (log detail)
         run: |
           export ANDROID_HOME=/usr/local/lib/android/sdk
           export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
           chmod +x gradlew || true
           ./gradlew clean
-          ./gradlew assembleDebug --stacktrace
-          find $PWD -type f -name "*.apk"
-
-      - name: Rename and Upload
-        run: |
-          APK_PATH=$(find . -type f -name "*.apk" | head -n 1)
-          echo "Found APK: $APK_PATH"
-          cp "$APK_PATH" html_saver_build_${{ github.run_number }}.apk
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: html_saver_build_${{ github.run_number }}
-          path: html_saver_build_${{ github.run_number }}.apk
+          ./gradlew projects
+          ./gradlew :app:assembleDebug --stacktrace --info
+          echo "========== Cek file APK =========="
+          find app/build -type f -name "*.apk" || echo "❌ Tidak ditemukan APK sama sekali"
